@@ -18,11 +18,8 @@ class CategoriesController extends AbstractController
      */
     public function index(ManagerRegistry $doctrine): Response
     {
-
-        //On va aller chercher les catégories dans la BDD
-        //pour ça on a besoin d'un repository
         $repo = $doctrine->getRepository(Categorie::class);
-        $categories=$repo->findAll(); //select * transformé en liste de Categorie
+        $categories=$repo->findAll();
 
         return $this->render('categories/index.html.twig', [
             'categories'=>$categories
@@ -89,8 +86,6 @@ class CategoriesController extends AbstractController
 
             //on génère l'appel SQL (update ici)
             $em->flush();
-
-            //on revient à l'accueil
             return $this->redirectToRoute("app_categories");
         }
 
@@ -104,32 +99,16 @@ class CategoriesController extends AbstractController
      * @Route("/categorie/supprimer/{id}", name="app_categories_supprimer")
      */
     public function supprimer($id, ManagerRegistry $doctrine, Request $request): Response{
-        //créer le formulaire sur le même principe que dans ajouter
-        //mais avec une catégorie existante
         $categorie = $doctrine->getRepository(Categorie::class)->find($id);
-
-        //je vais gérer le fait que l'id n'existe pas
         if (!$categorie){
             throw $this->createNotFoundException("Pas de catégorie avec l'id $id");
         }
-
-        //Si j'arrive là c'est qu'elle existe en BDD
-        //à partir de ça je crée le formulaire
         $form=$this->createForm(CategorieSupprimerType::class, $categorie);
-
-        //On gère le retour du formulaire tout de suite
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()){
-            //l'objet catégorie est rempli
-            //on va utiliser l'entity manager de doctrine
             $em=$doctrine->getManager();
-            //on lui dit qu'on supprimer la catégorie
             $em->remove($categorie);
-
-            //on génère l'appel SQL (update ici)
             $em->flush();
-
-            //on revient à l'accueil
             return $this->redirectToRoute("app_categories");
         }
 
